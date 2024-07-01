@@ -87,11 +87,18 @@ void TrafficLight::cycleThroughPhases()
     float min = 4;
     float max = 6;
     float cycleDuration = ((max - min) * ((float)rand() / RAND_MAX)) + min;
+
+
+    std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
+    std::chrono::time_point<std::chrono::steady_clock> endTime = startTime;
+    float elapsedTime = 0;
+
+
     while(true)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        cycleDuration -= 0.001;
-        if(cycleDuration <= 0)
+        elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+
+        if(cycleDuration <= elapsedTime)
         {
             switch (_currentPhase)
             {
@@ -105,12 +112,15 @@ void TrafficLight::cycleThroughPhases()
                     break;
                 end:
                     lightPhaseQueue.send(std::move(_currentPhase));
+                    startTime = std::chrono::steady_clock::now();
                     cycleDuration = ((max - min) * ((float)rand() / RAND_MAX)) + min;
                     break;
                 default:
                     break;
             }
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        endTime = std::chrono::steady_clock::now();
     }
 
 }
